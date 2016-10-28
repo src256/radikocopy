@@ -1,0 +1,6 @@
+remote:
+  host: bronze
+  dir: /Users/sora/Music/Audio Hijack
+
+local:
+  dir: /Users/sora/tmp2
