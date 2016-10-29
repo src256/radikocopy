@@ -23,6 +23,10 @@ module Radikocopy
       str << "local_dir: #{local_dir}\n"
       str << "import_scpt: #{import_scpt}\n"      
     end
+
+    def local_only?
+      @remote_host.nil? || @remote_dir.nil?
+    end
     
     private
     def config_value(section, key, require)
@@ -67,13 +71,13 @@ module Radikocopy
     
     def run
       puts "##### start radikocopy #####"
-      
-      filenames = copy_files
-      if @opts[:f]
+      filenames = []
+      if @opts[:f] || @config.local_only?
         filenames = Dir.glob("#{@config.local_dir}/*.mp3")
+      else
+        filenames = copy_files
       end
       import_files(filenames)
-      
       puts "##### end radikocopy #####" 
     end
 
@@ -87,7 +91,8 @@ module Radikocopy
         line.chomp!
         if line =~ /mp3$/
           if copy_file(line)
-            files << File.join(@config.local_dir, line)
+            basename = File.basename(line)
+            files << File.join(@config.local_dir, basename)
           end
         end
       end
