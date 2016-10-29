@@ -10,6 +10,9 @@ module Radikocopy
       @remote_host = config_value("remote", "host", false)
       @remote_dir = config_value("remote", "dir", false)
       @local_dir = config_value("local", "dir", true)
+      unless FileTest.directory?(@local_dir)
+        raise RuntimeError, "local_dir does not exists: #{@local_dir}"
+      end
       dir = File.dirname(File.expand_path(__FILE__))
       @import_scpt = File.join(dir, "radikoimport.scpt")
     end
