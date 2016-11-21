@@ -46,9 +46,9 @@ module Radikocopy
       STDOUT.sync = true
       opts = {}
       opt = OptionParser.new(argv)
-      opt.banner = "Usage: #{opt.program_name} [-h|--help] config.yml"
+      opt.banner = "Usage: #{opt.program_name} [-h|--help] [config.yml]"
       opt.separator('')
-      opt.separator "#{opt.program_name} Available Options"
+      opt.separator "Options:"
       opt.on_head('-h', '--help', 'Show this message') do |v|
         puts opt.help
         exit
@@ -57,11 +57,15 @@ module Radikocopy
       opt.on('-n', '--dry-run', 'Message only') {|v| opts[:n] = v}
       opt.on('-f', '--force-import', 'Force import') {|v| opts[:f] = v} 
       opt.parse!(argv)
-      if argv.empty?
+
+      # 最後の引数は設定ファイルのパス
+      config_file = argv.empty? ? "~/.radikocopyrc" : argv[0]
+      config_file = File.expand_path(config_file)
+      unless FileTest.file?(config_file)
         puts opt.help
         exit
       end
-      config = Config.new(YAML.load_file(argv[0]))
+      config = Config.new(YAML.load_file(config_file))
       puts config
       radikocopy = Command.new(opts, config)
       radikocopy.run
@@ -76,7 +80,7 @@ module Radikocopy
       puts "##### start radikocopy #####"
       filenames = []
       if @opts[:f] || @config.local_only?
-        filenames = Dir.glob("#{@config.local_dir}/*.mp3")
+        filenames = Dir.glob("#{@config.local_dir}/*.{mp3,m4a}")
       else
         filenames = copy_files
       end
@@ -92,10 +96,12 @@ module Radikocopy
       files = []
       result.each_line do |line|
         line.chomp!
-        if line =~ /mp3$/
+        if line =~ /mp3$/ || line =~ /m4a$/
           if copy_file(line)
             basename = File.basename(line)
-            files << File.join(@config.local_dir, basename)
+            local_file = File.join(@config.local_dir, basename)
+            puts "local_file: #{local_file}"
+            files << local_file
           end
         end
       end
