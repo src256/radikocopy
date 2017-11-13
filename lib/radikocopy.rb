@@ -47,6 +47,7 @@ module Radikocopy
       opts = {}
       opt = OptionParser.new(argv)
       opt.banner = "Usage: #{opt.program_name} [-h|--help] [config.yml]"
+      opt.version = Radikocopy::VERSION
       opt.separator('')
       opt.separator "Options:"
       opt.on_head('-h', '--help', 'Show this message') do |v|
@@ -112,28 +113,52 @@ module Radikocopy
       basename = File.basename(filename)
       local_file = File.join(@config.local_dir, basename)
       if FileTest.file?(local_file)
-        puts "exists local_file #{local_file}"
+# TODO -v option        
+#        puts "exists local_file #{local_file}"
         return false
       end
       copy_command = "scp #{@config.remote_host}:\"'#{filename}'\" \"#{@config.local_dir}\""
-      runcmd(copy_command)
+      runcmd_and_exit(copy_command)
       true
     end
 
     def import_files(files)
       files.each do |file|
-        cmd = "osascript #{@config.import_scpt} \"#{file}\""
-        runcmd(cmd)
+        import_ok = false
+        3.times do |i|
+          if import_file(file, i)
+            import_ok = true
+            break
+          end
+          sleep(1)
+        end
+        unless import_ok
+          puts "import failed"
+          File.unlink(file)
+        end
+      end
+    end
+
+    def import_file(file, i)
+      cmd = "osascript #{@config.import_scpt} \"#{file}\""
+      unless runcmd(cmd)
+        puts "import error[#{i}] #{file}"
+        return false
+      end
+      true
+    end
+
+    def runcmd_and_exit(cmd)
+      unless runcmd(cmd)
+        puts "system error"
+        exit(1)        
       end
     end
 
     def runcmd(cmd)
       puts cmd
-      unless system(cmd)
-        puts "system error"
-        exit(1)
-      end
-    end
+      system(cmd)
+    end    
   end
 
 end
