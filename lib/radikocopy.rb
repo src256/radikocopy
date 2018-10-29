@@ -15,9 +15,10 @@ module Radikocopy
       end
       dir = File.dirname(File.expand_path(__FILE__))
       @import_scpt = File.join(dir, "radikoimport.scpt")
+      @keep = 10
     end
 
-    attr_reader :remote_host, :remote_dir, :local_dir, :import_scpt
+    attr_reader :remote_host, :remote_dir, :local_dir, :import_scpt, :keep
 
     def to_s
       str = ''
@@ -86,6 +87,7 @@ module Radikocopy
         filenames = copy_files
       end
       import_files(filenames)
+      expire_local_files
       puts "##### end radikocopy #####" 
     end
 
@@ -96,6 +98,7 @@ module Radikocopy
       result = `#{list_command}`
       files = []
       result.each_line do |line|
+#        puts line
         line.chomp!
         if line =~ /mp3$/ || line =~ /m4a$/
           if copy_file(line)
@@ -148,6 +151,19 @@ module Radikocopy
       true
     end
 
+    def expire_local_files
+      #ローカル保存フォルダ内の古いファイルを削除する
+      filenames = Dir.glob("#{@config.local_dir}/*.{mp3,m4a}").sort_by {|f| File.mtime(f) }.reverse
+      filenames.each_with_index do |filename, index|
+        if index < @config.keep
+          puts "Keep: #{filename}"
+        else
+          puts "Delete: #{filename}"
+          File.unlink(filename)
+        end
+      end
+    end
+    
     def runcmd_and_exit(cmd)
       unless runcmd(cmd)
         puts "system error"
