@@ -115,12 +115,14 @@ module Radikocopy
     def copy_file(filename)
       basename = File.basename(filename)
       local_file = File.join(@config.local_dir, basename)
+#      puts  "##### local_file #{local_file} #####"
       if FileTest.file?(local_file)
 # TODO -v option        
 #        puts "exists local_file #{local_file}"
         return false
       end
-      copy_command = "scp #{@config.remote_host}:\"'#{filename}'\" \"#{@config.local_dir}\""
+#      puts "not exists"
+      copy_command = "scp -p #{@config.remote_host}:\"'#{filename}'\" \"#{@config.local_dir}\""
       runcmd_and_exit(copy_command)
       true
     end
