@@ -15,7 +15,7 @@ module Radikocopy
       end
       dir = File.dirname(File.expand_path(__FILE__))
       @import_scpt = File.join(dir, "radikoimport.scpt")
-      @keep = 10
+      @keep = 20
     end
 
     attr_reader :remote_host, :remote_dir, :local_dir, :import_scpt, :keep
