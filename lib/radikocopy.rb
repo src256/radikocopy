@@ -14,7 +14,11 @@ module Radikocopy
         raise RuntimeError, "local_dir does not exists: #{@local_dir}"
       end
       dir = File.dirname(File.expand_path(__FILE__))
-      @import_scpt = File.join(dir, "radikoimport.scpt")
+      if FileTest.exist?('/System/Applications/Music.app')
+        @import_scpt = File.join(dir, "radikoimport_music.scpt")
+      else
+        @import_scpt = File.join(dir, "radikoimport_itunes.scpt")
+      end
       @keep = 20
     end
 
