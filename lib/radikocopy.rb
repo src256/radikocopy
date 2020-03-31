@@ -126,7 +126,7 @@ module Radikocopy
         return false
       end
 #      puts "not exists"
-      copy_command = "scp -p #{@config.remote_host}:\"'#{filename}'\" \"#{@config.local_dir}\""
+      copy_command = "scp -p -T #{@config.remote_host}:\"'#{filename}'\" \"#{@config.local_dir}\""
       runcmd_and_exit(copy_command)
       true
     end
